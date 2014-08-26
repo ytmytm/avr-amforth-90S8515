@@ -11,6 +11,7 @@
 .TARGET "forth.hex"
 
 .TRACE              ; Activate micro trace
+;.STATS
 
 ; Following lines are optional; if not included
 ; exactly these values are taken by default
@@ -31,6 +32,7 @@ D1 VDD PA0
 D2 VDD PA1
 D3 VDD PA2
 D4 VDD PA3
+
 
 
 

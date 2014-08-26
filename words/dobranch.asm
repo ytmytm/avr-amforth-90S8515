@@ -15,7 +15,7 @@ PFA_DOBRANCH:
 ;    lpm xl, Z+
 	lpm
 	mov xl, r0
-	inc zl
+	adiw zl, 1
 ;    lpm xh, Z
 	lpm
 	mov xh, r0

@@ -29,30 +29,3 @@ PFA_COLD:
 	.dw XT_QUIT
 	.dw XT_EXIT
 
-;;    .dw XT_TICKTURNKEY
-;;    .dw XT_EFETCH
-	.dw XT_VER
-	;; quit!
-	.dw XT_TIB
-	.dw XT_DOLITERAL
-	.dw TIBSIZE
-	.dw XT_ACCEPT
-	.dw XT_NUMBERTIB
-	.dw XT_STORE
-	.dw XT_ZERO
-	.dw XT_G_IN
-	.dw XT_STORE
-
-	.dw XT_DOLITERAL
-	.dw XT_INTERPRET
-	.dw XT_CATCH
-
-;	.dw XT_WORDS
-	.dw XT_STUCK
-	;;
-;;    .dw XT_QEXECUTE
-;;    .dw XT_QUIT
-;;    .dw XT_EXIT
-
-
-

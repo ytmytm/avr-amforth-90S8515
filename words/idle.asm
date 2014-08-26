@@ -8,14 +8,14 @@ XT_IDLE:
     .dw PFA_IDLE
 
 PFA_IDLE:	; power saving mode
-	in_ temp0, MCUCR
+	in temp0, MCUCR
 	sbr temp0, (1<<SE)
 	cbr temp0, (1<<SM)
-	out_ MCUCR, temp0
+	out MCUCR, temp0
 	sleep
-	in_ temp0, MCUCR
-	cbr temp0, (1<<SE)
-	out_ MCUCR, temp0
+;	in_ temp0, MCUCR
+;	cbr temp0, (1<<SE)
+;	out_ MCUCR, temp0
 	rjmp DO_NEXT
 
 

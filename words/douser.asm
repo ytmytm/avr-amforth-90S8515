@@ -16,7 +16,7 @@ PFA_DOUSER:
 ;    lpm temp0, Z+
 	lpm
 	mov temp0, r0
-	inc zl
+	adiw zl, 1
 ;    lpm temp1, Z
 	lpm
 	mov temp1, r0

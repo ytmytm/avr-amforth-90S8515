@@ -1,10 +1,22 @@
-; Settings for the eval board with AT90S8515 & 4 MHz
-
+; Settings for the eval board with AT90S8515 & 8 MHz
 ;
 ; TODO:
-; - optymalizacja dostêpu do portu, sbi/cbi mo¿na robiæ bezpo¶rednio na porcie
-; - wszystko, co niezbêdne do interpret, bez mo¿liwo¶ci kompilacji nowych s³ów
-;	(zakomentowaæ lub dummy)
+; - wymieniaæ lpm na readram po jednej funkcji i testowaæ: czy mo¿e byæ rcall, czy nie??
+; - wstawiæ XT_NOOP do RAM i sprawdziæ dzia³anie interpretera
+;	- uwaga na adresy! we flash*2, w RAM nie! (gdzie¶ dzieliæ? przy zapisie? wcale?)
+; - ustawiæ koniec heap na pocz±tek ram (>1k), ale ustawienia jak dla 8515 bez extram
+; - implementacja istore; mo¿e niech flaga kontroluje gdzie to ma byæ zapisywane
+;
+;;
+; port 8515
+; - makra cbi/sbi/in/out zast±pione rozkazami
+; - inne definicje portów dla UART, napisane po swojemu
+; - brak movw, zast±pione przez mov+mov; brak jmp zast±piony przez rjmp
+; - wczytywanie tylko przez 'lpm', przepisane rêcznie przez r0
+; - procedura mno¿enia (XT_MUL, star.asm)
+;    - u¿ywa rejestrów nie wymienionych tutaj!
+; nowo¶ci
+; - s³owo idle, które usypia cpu
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .nolist
@@ -38,46 +50,6 @@
 
   .set heap = ramstart
   .set VE_HEAD = $0000
-
-.macro jmp_
-    rjmp @0
-.endmacro
-
-.macro in_
-;.if (@1 < $40)
-  in @0,@1
-;.else
-;  lds @0,@1
-;.endif
-.endmacro
-
-.macro out_
-;.if (@0 < $40)
-  out @0,@1
-;.else
-;  sts @0,@1
-;.endif
-.endmacro
-
-.macro sbi_
-;.if (@0 < $40)
-  sbi @0,@1
-;.else
-;  in_ @2,@0
-;  ori @2,exp2(@1)
-;  out_ @0,@2
-;.endif
-.endmacro
-
-.macro cbi_
-;.if (@0 < $40)
-  cbi @0,@1
-;.else
- ; in_ @2,@0
- ; andi @2,~(exp2(@1))
- ; out_ @0,@2
-;.endif
-.endmacro
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "devices\atmega8.asm"
@@ -149,10 +121,8 @@
 
 device_init:
     ; just a dummy
-	in_ temp0, ACSR
-	cbr temp0, (1<<ACIE)	; clear irq enable
-	sbr temp0, (1<<ACD)	; disable Analog Comparator to reduce
-	out_ ACSR, temp0	; power consumption in sleep mode
+	cbi ACSR, ACIE		; clear irq enable from analog comparator
+	sbi ACSR, ACD		; disable analog comparator to reduce power consumption in idle mode 
     ret
 
 ;.include "amforth.asm"
@@ -217,8 +187,6 @@ reset:
     ; load Forth IP with starting word
     ldi xl, low(PFA_COLD)
     ldi xh, high(PFA_COLD)
-;    ldi xl, low(PFA_TESTME)
-;    ldi xh, high(PFA_TESTME)
         ldi yl,low(stackstart)
     	ldi yh,high(stackstart)
 
@@ -228,7 +196,7 @@ reset:
     ; enable interrupts (needed for getting (terminal) input)
     sei
     ; its a far jump...
-    jmp_ DO_NEXT
+    rjmp DO_NEXT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ISR routines
@@ -313,14 +281,6 @@ PFA_INTVECTOR:
     .dw XT_EXIT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-XT_STUCK:
-	.dw PFA_XT_STUCK
-PFA_XT_STUCK:
-	ldi xl, low(PFA_COLD)
-	ldi xh, high(PFA_COLD)
-	rjmp DO_NEXT
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "usart.asm"
 
 .set pc_ = pc
@@ -359,20 +319,11 @@ usart0_init:
   sts usart0_rx_in,zerol
   sts usart0_rx_out,zerol
 
-;  ldi temp0, LOW( baudrate )
-;  out_ UBRR0L, temp0
-;  ldi temp0, HIGH( baudrate )
-;  out_ UBRR0H, temp0
-;  ldi temp0, (1<<UMSEL01)|(3<<UCSZ00)
-;  out_ UCSR0C, temp0
-;  sbi_ UCSR0B, TXEN0, temp0
-;  sbi_ UCSR0B, RXEN0, temp0
-;  sbi_ UCSR0B, RXCIE0, temp0
     ldi temp0, LOW( baudrate )
-    out_ UBRR, temp0
-    sbi_ UCR, TXEN, temp0
-    sbi_ UCR, RXEN, temp0
-    sbi_ UCR, RXCIE, temp0
+    out UBRR, temp0
+	sbi UCR, TXEN
+	sbi UCR, RXEN
+	sbi UCR, RXCIE
   ret
 
 usart0_udre_isr:
@@ -390,12 +341,7 @@ usart0_udre_isr:
   brne usart0_udre_next
 
 usart0_udre_last:
-;  in_ xl,UCSR0B
-;  cbr xl,(1<<UDRIE0)
-;  out_ UCSR0B,xl
-    in_ xl, UCR
-    cbr xl, (1<<UDRIE)	; clear interrupts
-    out_ UCR, xl
+	cbi UCR, UDRIE	; clear interrupts
 
   rjmp usart0_udre_done
 
@@ -410,8 +356,7 @@ usart0_udre_next:
   adc zh,zeroh
 
   ld xl,z
-;  out_ UDR0,xl
-    out_ UDR, xl
+    out UDR, xl
 
 usart0_udre_done:
   pop zh
@@ -439,15 +384,13 @@ usart0_rx_isr:
   brne usart0_rxc_next
 
 usart0_rxc_full:
-;  in_ xl,UDR0
-    in_ xl, UDR
+    in xl, UDR
   rjmp usart0_rxc_done
 usart0_rxc_next:
   ldi zl,low(usart0_rx_data)
   ldi zh,high(usart0_rx_data)
   add zl,xl
   adc zh,zeroh
-;  in_ xh,UDR0
     in xh, UDR
   st z,xh
   sts usart0_rx_in,xl
@@ -488,13 +431,8 @@ PFA_tx0_store:
     ld temp0, Y+
     st z,temp0
 
-;    in_ temp0,UCSR0B
-;    sbr temp0,(1<<UDRIE0)
-;    out_ UCSR0B,temp0
-    in_ temp0, UCR
-    sbr temp0, (1<<UDRIE)
-    out_ UCR, temp0
-    jmp_ DO_NEXT
+	sbi UCR, UDRIE	; enable interrupts
+    rjmp DO_NEXT
 
 ; ( -- f) always true
 VE_TX0Q:
@@ -510,7 +448,7 @@ PFA_TX0Q:
     sbiw zl, 1
     st -Y, zl
     st -Y, zh
-    jmp_ DO_NEXT
+    rjmp DO_NEXT
 
 ; ( -- c)
 VE_RX0:
@@ -538,7 +476,7 @@ PFA_rx0_fetch:
     ld temp0, Z	
     st -Y, temp0
     st -Y, zeroh
-    jmp_ DO_NEXT
+    rjmp DO_NEXT
 
 ; ( -- f)
 VE_RX0Q:
@@ -557,60 +495,25 @@ PFA_RX0Q:
     sbiw zl, 1
     st -Y, zl
     st -Y, zh
-    jmp_ DO_NEXT
+    rjmp DO_NEXT
 
 
 ; lower part of the dictionary
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "dict_low.asm"
 .include "words_low.asm"
-.include "words/cold.asm"
+	.include "words/idle.asm"
+.include "words/dobranch.asm"
+.include "words/docondbranch.asm"	; doesn't belong do lpm cat, but must be near dobranch
+.include "words/dovariable.asm"
+.include "words/douser.asm"
+.include "words/ifetch.asm"
+.include "words/doliteral.asm"
 
-; pierwociny do interpret...
-.include "words/cfetch.asm"
-.include "words/sharptib.asm"
-.include "words/word.asm"
-.include "words/pad.asm"
-.include "words/notequalzero.asm"
-.include "words/g_in.asm"
-.include "words/find.asm"
-.include "words/negate.asm"
-.include "words/invert.asm"
-.include "words/interpret.asm"
-;
-.include "words/spfetch.asm"
-.include "words/rpfetch.asm"
-.include "words/number.asm"
-.include "words/rot.asm"
-.include "words/base.asm"
-.include "words/digit.asm"
-.include "words/throw.asm"
-.include "words/catch.asm"
-.include "words/handler.asm"
-.include "words/count.asm"
-.include "words/i.asm"
-.include "words/star.asm"
-.include "words/greater.asm"
-.include "words/lesszero.asm"
-;
-.include "words/hex.asm"
-.include "words/decimal.asm"
-.include "words/dot.asm"
-.include "words/abs.asm"
-.include "words/sign.asm"
-.include "words/l_sharp.asm"
-.include "words/hld.asm"
-.include "words/hold.asm"
-.include "words/sharp.asm"
-.include "words/sharp_s.asm"
-.include "words/sharp_g.asm"
-.include "words/slashmod.asm"
-.include "words/uslashmod.asm"
-.include "words/cmove_g.asm"
-.include "words/type.asm"
-;
+.include "words/cold.asm"
 .include "words/turnkey.asm"
 .include "words/quit.asm"
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set label to latest used cell in cseg
 ;VE_LATEST:
@@ -656,7 +559,7 @@ DO_NEXT: ; 24 CPU cycles to ijmp
 ;    lpm wl, Z+
     lpm
     mov wl, r0
-    inc zl
+    adiw zl, 1
 ;    lpm wh, Z      ; done read IP
     lpm
     mov wh, r0
@@ -671,7 +574,7 @@ DO_EXECUTE: ; 12 cpu cycles to ijmp
 ;    lpm temp0, Z+
     lpm
     mov temp0, r0
-    inc zl
+    adiw zl, 1
 ;    lpm temp1, Z
     lpm
     mov temp1, r0

@@ -15,11 +15,13 @@ PFA_DOVARIABLE:
     rol zh
 ;    lpm temp0, Z+
 	lpm
-	mov temp0, r0
-	inc zl
-    st -Y, temp0
+;	mov temp0, r0
+	adiw zl, 1
+	st -Y, r0
+;    st -Y, temp0
 ;    lpm temp1, Z
 	lpm
-	mov temp1, r0
-    st -Y, temp1
+;	mov temp1, r0
+	st -Y, r0
+;    st -Y, temp1
     rjmp DO_NEXT
