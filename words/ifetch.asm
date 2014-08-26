@@ -13,8 +13,13 @@ PFA_IFETCH:
     ld zl, Y+
     lsl zl
     rol zh
-    lpm temp0, z+
-    lpm temp1, z
+;    lpm temp0, z+
+	lpm
+	mov temp0, r0
+	inc zl
+;    lpm temp1, z
+	lpm
+	mov temp1, r0
     st -Y, temp0
     st -Y, temp1
     rjmp DO_NEXT

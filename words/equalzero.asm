@@ -11,7 +11,9 @@ PFA_EQUALZERO:
     ld temp2, Y+
     cp zerol, temp2
     cpc zeroh, temp3
-    movw zl, zerol
+;    movw zl, zerol
+	mov zl, zerol
+	mov zh, zeroh
     brne PFA_EQUALZERO1
     sbiw zl, 1
 PFA_EQUALZERO1:

@@ -7,9 +7,16 @@
 XT_DOBRANCH:
     .dw PFA_DOBRANCH
 PFA_DOBRANCH:
-    movw zl, xl
+;    movw zl, xl
+	mov zl, xl
+	mov zh, xh
     lsl zl
     rol zh
-    lpm xl, Z+
-    lpm xh, Z
+;    lpm xl, Z+
+	lpm
+	mov xl, r0
+	inc zl
+;    lpm xh, Z
+	lpm
+	mov xh, r0
     rjmp DO_NEXT

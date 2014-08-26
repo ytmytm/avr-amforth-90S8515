@@ -11,7 +11,9 @@ PFA_GREATERZERO:
     ld temp2, Y+
     cp temp2, zerol
     cpc temp3, zeroh
-    movw zl, zerol
+;    movw zl, zerol
+	mov zl, zerol
+	mov zh, zeroh
     brlt PFA_GREATERZERO1
     brbs 1, PFA_GREATERZERO1
     sbiw zl, 1

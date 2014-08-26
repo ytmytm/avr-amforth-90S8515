@@ -13,7 +13,9 @@ PFA_LESS:
     ld temp2, Y+
     cp temp0, temp2
     cpc temp1, temp3
-    movw zl, zerol
+;    movw zl, zerol
+	mov zl, zerol
+	mov zh, zeroh
     brlt PFA_LESS1
     brbs 1, PFA_LESS1
     sbiw zl, 1

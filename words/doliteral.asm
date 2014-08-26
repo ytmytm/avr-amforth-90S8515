@@ -7,12 +7,19 @@
 XT_DOLITERAL:
     .dw PFA_DOLITERAL
 PFA_DOLITERAL:
-    movw zl, xl
+;    movw zl, xl
+    mov zl, xl
+    mov zh, xh
     lsl zl
     rol zh
-    lpm temp0, Z+
+;    lpm temp0, Z+
+    lpm
+    mov temp0, r0
+    inc zl
     st -Y, temp0
-    lpm temp1, Z
+;    lpm temp1, Z
+    lpm
+    mov temp1, r0
     st -Y, temp1
     adiw xl, 1
     rjmp DO_NEXT

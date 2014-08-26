@@ -16,12 +16,26 @@ PFA_COLD:
     .dw XT_STATE
     .dw XT_STORE
 
-    .dw XT_ZERO
+;;    .dw XT_ZERO
+	.dw XT_DOLITERAL	; set IDLE (CPU sleep) as PAUSE mode
+	.dw XT_IDLE
     .dw XT_TICKPAUSE
     .dw XT_STORE
 
-    .dw XT_TICKTURNKEY
-    .dw XT_EFETCH
-    .dw XT_QEXECUTE
-    .dw XT_QUIT
-    .dw XT_EXIT
+;;    .dw XT_TICKTURNKEY
+;;    .dw XT_EFETCH
+	.dw XT_VER
+	;;
+	.dw XT_TIB
+	.dw XT_DOLITERAL
+	.dw TIBSIZE
+	.dw XT_ACCEPT
+	.dw XT_WORDS
+	.dw XT_STUCK
+	;;
+;;    .dw XT_QEXECUTE
+;;    .dw XT_QUIT
+;;    .dw XT_EXIT
+
+
+

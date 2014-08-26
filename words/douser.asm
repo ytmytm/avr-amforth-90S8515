@@ -7,14 +7,22 @@
 XT_DOUSER:
     .dw PFA_DOUSER
 PFA_DOUSER:
-    movw zl, wl
+;    movw zl, wl
+	mov zl, wl
+	mov zh, wh
     adiw zl, 1
     lsl zl
     rol zh
-    lpm temp0, Z+
-    lpm temp1, Z
+;    lpm temp0, Z+
+	lpm
+	mov temp0, r0
+	inc zl
+;    lpm temp1, Z
+	lpm
+	mov temp1, r0
     add temp0, upl
     adc temp1, uph
     st -Y, temp0
     st -Y, temp1
     rjmp DO_NEXT
+
