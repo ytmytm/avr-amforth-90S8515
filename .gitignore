@@ -6,3 +6,5 @@
 *.lis
 *.ly1
 *.map
+_trace.dat
+words_low.asm
