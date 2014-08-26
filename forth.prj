@@ -5,6 +5,7 @@
 
 ; Micro + software running
 ; ------------------------------------------------------------
+;.MICRO "AT90S8515_64K"
 .MICRO "AT90S8515"
 .PROGRAM "forth.asm"
 .TARGET "forth.hex"
@@ -15,7 +16,7 @@
 ; exactly these values are taken by default
 ; ------------------------------------------------------------
 .POWER VDD=5 VSS=0  ; Power nodes
-.CLOCK 4meg         ; Micro clock
+.CLOCK 8meg         ; Micro clock
 .STORE 250m         ; Trace (micro+signals) storage time
 
 ; Micro nodes: RESET, PA0-PA7, PB0-PB7, PC0-PC7, PD0-PD7, PE0-PE2, ACO, TIM1OVF
@@ -25,5 +26,11 @@
 
 
 X1  TTY(9600 8) PD0 PD1
+
+D1 VDD PA0
+D2 VDD PA1
+D3 VDD PA2
+D4 VDD PA3
+
 
 

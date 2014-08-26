@@ -9,9 +9,13 @@ XT_LESSZERO:
 PFA_LESSZERO:
     ld temp3, Y+
     ld temp2, Y+
+	mov zl, zerol
+	mov zh, zeroh
     cp temp2, zerol
     cpc temp3, zeroh
-    movw zl, zerol
+;;    movw zl, zerol
+;	mov zl, zerol
+;	mov zh, zeroh
     brge PFA_LESSZERO1
     sbiw zl, 1
 PFA_LESSZERO1:

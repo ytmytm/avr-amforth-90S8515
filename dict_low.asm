@@ -1,141 +1,66 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; header
-;  +--1+x--++--2--+--2----0+x...--
-;  | VOC   |  L  | XT  | PF
-;  +-------#-----+-----+----....--
-; VOC (flags may be inverted to be flash friendly)
-;       Bit
-;         7 6 5 4-0
-;         I U U Length
-;    I = Immediate
-;    U = Unused
-;    Length = length of word name (1..31)
-;      Length number of bytes, filled to next cell
-;  L
-;    Link to previos Dictionary entry or zero for first entry
-;  XT
-;    Address of Executable Code
-;  PF
-;    Parameter Field (List of XT, Constant Value etc)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-.include "words/literal.asm"
-
+.include "words/sp0.asm"
+.include "words/spstore.asm"
+.include "words/rp0.asm"
+.include "words/rpstore.asm"
+.include "words/zero.asm"
+.include "words/dovariable.asm"
 .include "words/state.asm"
-.include "words/base.asm"
-.include "words/g_in.asm"
-.include "words/sharptib.asm"
-.include "words/tib.asm"
-.include "words/pad.asm"
-.include "words/hld.asm"
-.include "words/qexecute.asm"
+.include "words/store.asm"
+.include "words/fetch.asm"
+.include "words/douser.asm"
+.include "words/r_from.asm"
+.include "words/to_r.asm"
+.include "words/dup.asm"
+.include "words/ifetch.asm"
+.include "words/icount.asm"
+.include "words/and.asm"
+.include "words/itype.asm"
+.include "words/dodo.asm"
+.include "words/swap.asm"
+.include "words/over.asm"
+.include "words/equal.asm"
+.include "words/equalzero.asm"
+.include "words/greaterzero.asm"
+.include "words/drop.asm"
+.include "words/r_fetch.asm"
+.include "words/rshift.asm"
 .include "words/emit.asm"
-.include "words/emitq.asm"
+.include "words/qexecute.asm"
+.include "words/qdup.asm"
+.include "words/execute.asm"
+.include "words/dobranch.asm"
+.include "words/docondbranch.asm"
+.include "words/doloop.asm"
+;
+.include "words/accept.asm"
+.include "words/pause.asm"
+	.include "words/idle.asm"
 .include "words/key.asm"
 .include "words/keyq.asm"
-.include "words/slashkey.asm"
-
-.include "words/dp.asm"
-.include "words/head.asm"
-.include "words/here.asm"
-.include "words/allot.asm"
-.include "words/comma.asm"
-
-.include "words/abort.asm"
-.include "words/abortstring.asm"
-
-.include "words/decimal.asm"
-.include "words/hex.asm"
+.include "words/notequal.asm"
 .include "words/bl.asm"
-.include "words/edp.asm"
-.include "words/heap.asm"
-.include "words/turnkey.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/slashmod.asm"
-.include "words/uslashmod.asm"
-
-.include "words/negate.asm"
-.include "words/slash.asm"
-.include "words/mod.asm"
-.include "words/abs.asm"
-.include "words/min.asm"
-.include "words/max.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/cr.asm"
 .include "words/space.asm"
-.include "words/count.asm"
-;;;;;;;;;;;;;;;;;;;;;;
-.include "words/hold.asm"
-.include "words/l_sharp.asm" ; <#
-.include "words/sharp.asm"
-.include "words/sharp_s.asm"
-.include "words/sharp_g.asm" ; #>
-.include "words/sign.asm"
-.include "words/udot.asm"
-.include "words/dot.asm"
-.include "words/accept.asm"
-.include "words/digit.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/dodotstring.asm"
-.include "words/dotstring.asm"
-.include "words/itype.asm"
-.include "words/icount.asm"
-.include "words/type.asm"
-.include "words/words.asm"
-.include "words/tick.asm"
-.include "words/brackettick.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/handler.asm"
-.include "words/catch.asm"
-.include "words/throw.asm"
-.include "words/if.asm"
-.include "words/else.asm"
-.include "words/then.asm"
-.include "words/begin.asm"
-.include "words/while.asm"
-.include "words/repeat.asm"
-.include "words/until.asm"
-.include "words/again.asm"
-.include "words/do.asm"
-.include "words/loop.asm"
-.include "words/plusloop.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/char.asm"
-.include "words/number.asm"
-.include "words/word.asm"
-.include "words/find.asm"
-.include "words/quit.asm"
-.include "words/pause.asm"
-.include "words/cold.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/g_mark.asm"
-.include "words/g_resolve.asm"
-.include "words/l_mark.asm"
-.include "words/l_resolve.asm"
-.include "words/docreate.asm"
-.include "words/create.asm"
-.include "words/does.asm"
-.include "words/colon.asm"
-.include "words/colon-noname.asm"
-.include "words/semicolon.asm"
-.include "words/rightbracket.asm"
-.include "words/leftbracket.asm"
-.include "words/variable.asm"
-.include "words/constant.asm"
-.include "words/user.asm"
-.include "words/backslash.asm"
-.include "words/lparenthesis.asm"
-.include "words/recurse.asm"
-.include "words/immediate.asm"
-.include "words/compile.asm"
+.include "words/less.asm"
+.include "words/cstore.asm"
+.include "words/minus.asm"
+.include "words/cr.asm"
+.include "words/slashkey.asm"
+.include "words/tib.asm"
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-.include "words/sp0.asm"
-.include "words/rp0.asm"
-.include "words/depth.asm"
-.include "words/interpret.asm"
-.include "words/ver.asm"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.include "words/head.asm"
+.include "words/heap.asm"
+.include "words/efetch.asm"
+.include "words/words.asm"
+;
+.include "words/exit.asm"
 .include "words/noop.asm"
-.include "words/unused.asm"
+.include "words/plus.asm"
+.include "words/1plus.asm"
+.include "words/1minus.asm"
+.include "words/doliteral.asm"
+.include "words/2star.asm"
+.include "words/2slash.asm"
+.include "words/ver.asm"
+.include "words/dodotstring.asm"
+

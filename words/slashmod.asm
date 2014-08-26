@@ -9,7 +9,7 @@ XT_SLASHMOD:
 PFA_SLASHMOD:
     ld temp3, Y+
     ld temp2, Y+
-    
+
     ld temp1, Y+
     ld temp0, Y+
 
@@ -63,4 +63,6 @@ PFA_SLASHMODmod_done:
     ; put quotient on stack
     st -Y, temp0
     st -Y, temp1
-    jmp DO_NEXT
+;    jmp DO_NEXT
+	rjmp DO_NEXT
+

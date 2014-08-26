@@ -2,7 +2,9 @@
 
 ;
 ; TODO:
-; - join core words into single source file (vmlab limitation)
+; - optymalizacja dostêpu do portu, sbi/cbi mo¿na robiæ bezpo¶rednio na porcie
+; - wszystko, co niezbêdne do interpret, bez mo¿liwo¶ci kompilacji nowych s³ów
+;	(zakomentowaæ lub dummy)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .nolist
@@ -11,7 +13,7 @@
 .list
 
 ; cpu clock in hertz
-.equ cpu_frequency = 4000000
+.equ cpu_frequency = 8000000
 ; baud rate of terminal
 .equ baud_rate = 9600
 
@@ -561,85 +563,59 @@ PFA_RX0Q:
 ; lower part of the dictionary
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "dict_low.asm"
+.include "words_low.asm"
 .include "words/cold.asm"
-;
-.include "dict_core.asm"
-;;.include "words/sp0.asm"
-;;.include "words/spstore.asm"
-;;.include "words/rp0.asm"
-;;.include "words/rpstore.asm"
-.include "words/zero.asm"
-.include "words/dovariable.asm"
-.include "words/state.asm"
-.include "words/store.asm"
-.include "words/fetch.asm"
-.include "words/douser.asm"
-.include "words/r_from.asm"
-.include "words/to_r.asm"
-.include "words/dup.asm"
-.include "words/ifetch.asm"
-.include "words/icount.asm"
-.include "words/and.asm"
-.include "words/itype.asm"
-.include "words/dodo.asm"
-.include "words/swap.asm"
-.include "words/over.asm"
-.include "words/equal.asm"
-.include "words/equalzero.asm"
-.include "words/greaterzero.asm"
-.include "words/drop.asm"
-.include "words/r_fetch.asm"
-.include "words/rshift.asm"
-.include "words/emit.asm"
-.include "words/qexecute.asm"
-.include "words/qdup.asm"
-.include "words/execute.asm"
-.include "words/dobranch.asm"
-.include "words/docondbranch.asm"
-.include "words/doloop.asm"
-;
-.include "words/accept.asm"
-.include "words/pause.asm"
-	.include "words/idle.asm"
-.include "words/key.asm"
-.include "words/keyq.asm"
-.include "words/notequal.asm"
-.include "words/bl.asm"
-.include "words/space.asm"
-.include "words/less.asm"
-.include "words/cstore.asm"
-.include "words/minus.asm"
-.include "words/cr.asm"
-.include "words/slashkey.asm"
-.include "words/tib.asm"
-; pierwociny do interpret...
-;.include "words/cfetch.asm"
-;.include "words/sharptib.asm"
-;.include "words/word.asm"
-.include "words/notequalzero.asm"
-;.include "words/g_in.asm"
-;
-.include "words/head.asm"
-.include "words/heap.asm"
-;.include "words/pad.asm"
-.include "words/efetch.asm"
-.include "words/words.asm"
-;
-.include "words/exit.asm"
-.include "words/noop.asm"
-.include "words/plus.asm"
-.include "words/1plus.asm"
-.include "words/1minus.asm"
-.include "words/doliteral.asm"
-.include "words/2star.asm"
-.include "words/2slash.asm"
-.include "words/ver.asm"
-.include "words/dodotstring.asm"
 
+; pierwociny do interpret...
+.include "words/cfetch.asm"
+.include "words/sharptib.asm"
+.include "words/word.asm"
+.include "words/pad.asm"
+.include "words/notequalzero.asm"
+.include "words/g_in.asm"
+.include "words/find.asm"
+.include "words/negate.asm"
+.include "words/invert.asm"
+.include "words/interpret.asm"
+;
+.include "words/spfetch.asm"
+.include "words/rpfetch.asm"
+.include "words/number.asm"
+.include "words/rot.asm"
+.include "words/base.asm"
+.include "words/digit.asm"
+.include "words/throw.asm"
+.include "words/catch.asm"
+.include "words/handler.asm"
+.include "words/count.asm"
+.include "words/i.asm"
+.include "words/star.asm"
+.include "words/greater.asm"
+.include "words/lesszero.asm"
+;
+.include "words/hex.asm"
+.include "words/decimal.asm"
+.include "words/dot.asm"
+.include "words/abs.asm"
+.include "words/sign.asm"
+.include "words/l_sharp.asm"
+.include "words/hld.asm"
+.include "words/hold.asm"
+.include "words/sharp.asm"
+.include "words/sharp_s.asm"
+.include "words/sharp_g.asm"
+.include "words/slashmod.asm"
+.include "words/uslashmod.asm"
+.include "words/cmove_g.asm"
+.include "words/type.asm"
+;
+.include "words/turnkey.asm"
+.include "words/quit.asm"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set label to latest used cell in cseg
-VE_LATEST:
-	ret	; probably required!
+;VE_LATEST:
+.set lowflashlast = pc
+;	ret	; probably required!
 
 ; high part of the dictionary (primitives and words for self programming)
 ;.org nrww
@@ -721,23 +697,28 @@ DO_INTERRUPT: ; 12 cpu cycles to rjmp (+12=24 to ijmp)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "dict_high.asm"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.set flashlast = pc
 
 
 .eseg
-; flash addresses
-dp:  .dw VE_LATEST
-head:.dw VE_HEAD
-; ram free memory (well, stack matters)
-rheap:
-    .dw heap
-; eeprom free memory
-    .dw eheap
-; turnkey address
-    .dw XT_VER
+;; flash addresses
+;dp:  .dw VE_LATEST
+;head:.dw VE_HEAD
+;; ram free memory (well, stack matters)
+;rheap:
+;    .dw heap
+;; eeprom free memory
+;    .dw eheap
+;; turnkey address
+;    .dw XT_VER
+	.dw lowflashlast	; DP
+	.dw VE_HEAD		; HEAD
+	.dw heap		; HEAP
+	.dw edp			; EDP
+	.dw XT_VER		; 'TURNKEY
 ; 1st free address in EEPROM, see above
-eheap:
-;.cseg
-
-
+;eheap:
+edp:
+.cseg
 
 

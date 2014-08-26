@@ -58,4 +58,5 @@ PFA_USLASHMODmod_done:
     ; put quotient on stack
     st -Y, temp0
     st -Y, temp1
-    jmp DO_NEXT
+    ;jmp DO_NEXT
+	rjmp DO_NEXT
