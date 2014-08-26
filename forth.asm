@@ -1,11 +1,8 @@
 ; Settings for the eval board with AT90S8515 & 8 MHz
 ;
 ; TODO:
-; - wstawiæ XT_NOOP do RAM i sprawdziæ dzia³anie interpretera
-;	- uwaga na kolejnoœæ bajtów!
-;	- uwaga na adresy! we flash*2, w RAM nie! (gdzie¶ dzieliæ? przy zapisie? wcale?)
-; - ustawiæ koniec heap na pocz±tek ram (>1k), ale ustawienia jak dla 8515 bez extram
-; - implementacja istore; mo¿e niech flaga kontroluje gdzie to ma byæ zapisywane
+; - DP musi byc trzymany w RAM, a nie EPROM (wazne!)
+; - ustawic poczatkowy DP tak (lub przeorganizowac pamiec), zeby na golym 512b RAM poszlo
 ;
 ;;
 ; port 8515
@@ -196,7 +193,10 @@ reset:
     ; enable interrupts (needed for getting (terminal) input)
     sei
     ; its a far jump...
-    rjmp DO_NEXT
+    ldi zl, low(DO_NEXT)
+    ldi zh, high(DO_NEXT)
+    ijmp
+;    rjmp DO_NEXT
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; ISR routines
@@ -514,6 +514,19 @@ PFA_RX0Q:
 .include "words/turnkey.asm"
 .include "words/quit.asm"
 
+.include "words/compile.asm"
+.include "words/dp.asm"
+.include "words/estore.asm"
+.include "words/here.asm"
+.include "words/comma.asm"
+.include "words/variable.asm"
+.include "words/colon.asm"
+.include "words/docreate.asm"
+.include "words/leftbracket.asm"
+.include "words/rightbracket.asm"
+.include "words/semicolon.asm"
+.include "nwords/istore.asm"
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; set label to latest used cell in cseg
 ;VE_LATEST:
@@ -641,7 +654,8 @@ READ_RAM:
 ;    .dw eheap
 ;; turnkey address
 ;    .dw XT_VER
-	.dw lowflashlast	; DP
+;;	.dw lowflashlast	; DP
+	.dw lowflashlast+$8000	; DP (in RAM)
 	.dw VE_HEAD		; HEAD
 	.dw heap		; HEAP
 	.dw edp			; EDP

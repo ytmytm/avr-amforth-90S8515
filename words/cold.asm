@@ -22,7 +22,6 @@ PFA_COLD:
     .dw XT_TICKPAUSE
     .dw XT_STORE
 
-;	.dw XT_VER
 	.dw XT_TICKTURNKEY
 	.dw XT_EFETCH
 	.dw XT_QEXECUTE
