@@ -655,7 +655,7 @@ READ_RAM:
 ;; turnkey address
 ;    .dw XT_VER
 ;;	.dw lowflashlast	; DP
-	.dw lowflashlast+$8000	; DP (in RAM)
+	.dw $8130		; DP ($0260 in RAM)
 	.dw VE_HEAD		; HEAD
 	.dw heap		; HEAP
 	.dw edp			; EDP
