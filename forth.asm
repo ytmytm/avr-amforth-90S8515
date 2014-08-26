@@ -1,8 +1,8 @@
 ; Settings for the eval board with AT90S8515 & 8 MHz
 ;
 ; TODO:
-; - wymieniaæ lpm na readram po jednej funkcji i testowaæ: czy mo¿e byæ rcall, czy nie??
 ; - wstawiæ XT_NOOP do RAM i sprawdziæ dzia³anie interpretera
+;	- uwaga na kolejnoœæ bajtów!
 ;	- uwaga na adresy! we flash*2, w RAM nie! (gdzie¶ dzieliæ? przy zapisie? wcale?)
 ; - ustawiæ koniec heap na pocz±tek ram (>1k), ale ustawienia jak dla 8515 bez extram
 ; - implementacja istore; mo¿e niech flaga kontroluje gdzie to ma byæ zapisywane
@@ -503,12 +503,12 @@ PFA_RX0Q:
 ;.include "dict_low.asm"
 .include "words_low.asm"
 	.include "words/idle.asm"
-.include "words/dobranch.asm"
-.include "words/docondbranch.asm"	; doesn't belong do lpm cat, but must be near dobranch
-.include "words/dovariable.asm"
-.include "words/douser.asm"
-.include "words/ifetch.asm"
-.include "words/doliteral.asm"
+.include "nwords/dobranch.asm"
+.include "nwords/docondbranch.asm"	; doesn't belong do lpm cat, but must be near dobranch
+.include "nwords/dovariable.asm"
+.include "nwords/douser.asm"
+.include "nwords/ifetch.asm"
+.include "nwords/doliteral.asm"
 
 .include "words/cold.asm"
 .include "words/turnkey.asm"
@@ -554,31 +554,35 @@ DO_NEXT: ; 24 CPU cycles to ijmp
 ;    movw zl,xl        ; READ IP
     mov zl, xl
     mov zh, xh
-    lsl zl
-    rol zh
+	rcall READ_WORD
+	mov wl, temp0
+	mov wh, temp1
+;    lsl zl
+;    rol zh
 ;    lpm wl, Z+
-    lpm
-    mov wl, r0
-    adiw zl, 1
-;    lpm wh, Z      ; done read IP
-    lpm
-    mov wh, r0
+;    lpm
+;    mov wl, r0
+;    adiw zl, 1
+;;    lpm wh, Z      ; done read IP
+;    lpm
+;    mov wh, r0
     adiw xl, 1        ; INC IP
 
 DO_EXECUTE: ; 12 cpu cycles to ijmp
 ;    movw zl, wl
     mov zl, wl
     mov zh, wh
-    lsl zl
-    rol zh
-;    lpm temp0, Z+
-    lpm
-    mov temp0, r0
-    adiw zl, 1
-;    lpm temp1, Z
-    lpm
-    mov temp1, r0
-;    movw zl, temp0
+	rcall READ_WORD
+;    lsl zl
+;    rol zh
+;;    lpm temp0, Z+
+;    lpm
+;    mov temp0, r0
+;    adiw zl, 1
+;;    lpm temp1, Z
+;    lpm
+;    mov temp1, r0
+;;    movw zl, temp0
     mov zl, temp0
     mov zh, temp1
     ijmp
@@ -596,6 +600,29 @@ DO_INTERRUPT: ; 12 cpu cycles to rjmp (+12=24 to ijmp)
 
     clt ; clear the t flag to indicate that the interrupt is handled
     rjmp DO_EXECUTE
+
+
+; this costs 7 cycles on each entry/leave, could be saved by placing it in macro
+; read a word from address zl/zh into temp0/temp1
+; bit15 set - read from dataspace, otherwise - programspace
+READ_WORD:
+	lsl zl		; address := address*2
+	rol zh
+	; bit 7 of zh is in C now...
+	brcs READ_RAM	; branch to RAM read if set (less often than base words - cycle saved)
+	; read from FLASH
+	lpm
+	mov temp0, r0
+	adiw zl, 1
+	lpm
+	mov temp1, r0
+;READ_CONT:
+	ret		; quit
+READ_RAM:
+	ld temp0, Z+	; read word from RAM into temp0/temp1
+	ld temp1, Z
+	ret
+;	rjmp READ_CONT	; continue
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "dict_high.asm"
