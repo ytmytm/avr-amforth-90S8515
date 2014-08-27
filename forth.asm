@@ -6,13 +6,14 @@
 ;
 ;;
 ; port 8515
-; - makra cbi/sbi/in/out zast±pione rozkazami
+; - makra cbi/sbi/in/out zast¹pione rozkazami
 ; - inne definicje portów dla UART, napisane po swojemu
-; - brak movw, zast±pione przez mov+mov; brak jmp zast±piony przez rjmp
+; - brak movw, zast¹pione przez mov+mov; brak jmp zast±piony przez rjmp
 ; - wczytywanie tylko przez 'lpm', przepisane rêcznie przez r0
 ; - procedura mno¿enia (XT_MUL, star.asm)
 ;    - u¿ywa rejestrów nie wymienionych tutaj!
-; nowo¶ci
+; - jeœli adres s³owa ma ustawiony 15 bit, to jest brane z RAM (procedura READ_WORD), RAM ma 32K
+; nowoœci
 ; - s³owo idle, które usypia cpu
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -636,6 +637,74 @@ READ_RAM:
 	ld temp1, Z
 	ret
 ;	rjmp READ_CONT	; continue
+
+;; new dictionary (beyond base words in words_low)
+.include "words/1ms.asm"
+.include "words/abort.asm"
+.include "words/abortstring.asm"
+.include "words/again.asm"
+.include "words/allot.asm"
+.include "words/backslash.asm"
+.include "words/begin.asm"
+.include "words/brackettick.asm"
+.include "words/byteswap.asm"
+.include "words/char.asm"
+.include "words/colon-noname.asm"
+.include "words/constant.asm"
+.include "words/create.asm"
+.include "words/depth.asm"
+.include "words/do.asm"
+.include "words/does.asm"
+.include "words/doconstant.asm"
+.include "words/doplusloop.asm"
+.include "words/dot-s.asm"
+.include "words/dotstring.asm"
+.include "words/edp.asm"
+.include "words/else.asm"
+.include "words/emitq.asm"
+.include "words/g_mark.asm"
+.include "words/g_resolve.asm"
+.include "words/idump.asm"
+.include "words/if.asm"
+.include "words/immediate.asm"
+.include "words/j.asm"
+.include "words/l_mark.asm"
+.include "words/l_resolve.asm"
+.include "words/literal.asm"
+.include "words/loop.asm"
+.include "words/lparenthesis.asm"
+.include "words/lshift.asm"
+.include "words/min.asm"
+.include "words/max.asm"
+.include "words/mod.asm"
+.include "words/not.asm"
+.include "words/or.asm"
+.include "words/plusloop.asm"
+.include "words/plusstore.asm"
+.include "words/recurse.asm"
+.include "words/repeat.asm"
+.include "words/slash.asm"
+.include "words/then.asm"
+.include "words/tick.asm"
+.include "words/udot.asm"
+.include "words/unloop.asm"
+.include "words/until.asm"
+.include "words/up.asm"
+.include "words/user.asm"
+.include "words/while.asm"
+.include "words/xor.asm"
+; optional
+.include "words/case.asm"
+.include "words/d-2slash.asm"
+.include "words/d-2star.asm"
+.include "words/d-invert.asm"
+.include "words/d-minus.asm"
+.include "words/d-plus.asm"
+.include "words/endcase.asm"
+.include "words/endof.asm"
+.include "words/of.asm"
+.include "words/to.asm"
+.include "words/value.asm"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;.include "dict_high.asm"
